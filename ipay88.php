@@ -110,7 +110,7 @@ class ipay88 extends PaymentModule {
      * 
      */
     private function _postProcess() {
-        if (Tools::getIsset($_POST['submitipay88'])) {
+        if (Tools::getIsset(Tools::getValue('submitipay88'))) {
             Configuration::updateValue('ipay88_merchantCode', Tools::getValue('merchantCode'));
             Configuration::updateValue('ipay88_merchantKey', Tools::getValue('merchantKey'));
         }
