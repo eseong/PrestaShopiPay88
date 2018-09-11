@@ -66,7 +66,7 @@ class ipay88 extends PaymentModule {
      * 
      * @return boolean
      */
-    function install() {
+    public function install() {
         if (!parent::install() 
         	|| !$this->registerHook('paymentOptions') 
         	|| !$this->registerHook('paymentReturn') 
@@ -83,7 +83,7 @@ class ipay88 extends PaymentModule {
      * 
      * @return boolean
      */
-    function uninstall() {
+    public function uninstall() {
         if (!Configuration::deleteByName('ipay88_merchantKey') 
         	|| !Configuration::deleteByName('ipay88_merchantCode') 
         	|| !parent::uninstall())
@@ -214,7 +214,7 @@ class ipay88 extends PaymentModule {
         if (!$this->checkCurrency($params['cart']))
             return;		
 			
-        $address     = new Address(intval($params['cart']->id_address_invoice));
+        $address     = new Address((int)($params['cart']->id_address_invoice));
         $customer    = new Customer((int)$this->context->cart->id_customer);
         $merchantCode = Configuration::get('ipay88_merchantCode');
         $merchantKey     = Configuration::get('ipay88_merchantKey');
@@ -227,7 +227,7 @@ class ipay88 extends PaymentModule {
         $bill_name = $customer->firstname." ".$customer->lastname;
         $bill_email = $customer->email;
         
-        $country_obj =  new Country(intval($address->id_country));
+        $country_obj =  new Country((int)($address->id_country));
         $country = $country_obj->iso_code;
         $country_name_obj = $country_obj->name;
         $country_name =  $country_name_obj[1];
