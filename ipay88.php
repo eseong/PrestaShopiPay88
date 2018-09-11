@@ -314,5 +314,3 @@ class ipay88 extends PaymentModule {
         return false;
     }	
 }
-
-?>
