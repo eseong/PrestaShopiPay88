@@ -24,7 +24,8 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-class iPay88ValidationModuleFrontController extends ModuleFrontController {
+class IPay88ValidationModuleFrontController extends ModuleFrontController
+{
     public $display_column_left = false;
     public $display_column_right = false;
     public $ssl = true;
@@ -35,79 +36,84 @@ class iPay88ValidationModuleFrontController extends ModuleFrontController {
      * @see FrontController::postProcess()
      */
     
-    public function postProcess() {
+    public function postProcess() 
+    {
     
         $cart = $this->context->cart;
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active)
         {
             Tools::redirect('index.php?controller=order&step=1');
-		}
-		
+	
+	}
+	    
         $authorized = false;
         foreach (Module::getPaymentModules() as $module) {
-            if($module['name'] == 'ipay88') 
+            if($module['name'] == 'ipay88')
             {
                 $authorized = true;
                 break;
-            }
-        }
+		    
+	    }
+	}
         if(!$authorized)
         {
             die($this->module->l('This payment method is not available.', 'validation'));
-		}
-		
+	
+	}
+	    
         $customer = new Customer($cart->id_customer);
         if (!Validate::isLoadedObject($customer))
         {
             Tools::redirect('index.php?controller=order&step=1');
-		}
-		$merchantCode	= Tools::getValue('MerchantCode');
-		$paymentId 		= Tools::getValue('PaymentId');
-        $amount 		= Tools::getValue('Amount');
-        $orderid 		= Tools::getValue('RefNo');
-        $tranID 		= Tools::getValue('TransId');
-        $status 		= Tools::getValue('Status');
-        $currency 		= Tools::getValue('Currency');
-		$errdesc 		= Tools::getValue('ErrDesc');
-        $ipay88resqsig 	= Tools::getValue('Signature');
-        $merchantKey 	= Configuration::get('ipay88_merchantKey');
-		
-		$cartAmount = str_replace(",","",$amount);
-		$ipaySignature = '';
-		$HashAmount = str_replace(".","",str_replace(",","",$amount));
-		$str = sha1($merchantKey . $merchantCode . $paymentId . $orderid . $HashAmount . $currency . $status);
-		
-		for ($i=0;$i<Tools::strlen($str);$i=$i+2)
-		{
-        $ipaySignature .= chr(hexdec(Tools::substr($str,$i,2)));
-		}
-        $sg = base64_encode($ipaySignature);
-		
-        $currency = $this->context->currency;
-        $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
+	
+	}
 
-        if(!empty(Tools::GET['gotoorder'])) 
-        {
-            echo include_once 'modules/ipay88/views/templates/custom.php';
-            die();
-        }
-
-        if($status == "1") {
-             if ($ipay88resqsig != $sg)
-             {
-                $this->module->validateOrder($orderid, Configuration::get('PS_OS_ERROR'), $cartAmount, $this->module->displayName, "ErrDesc: " . $errdesc . "\niPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
+	    $merchantCode	= Tools::getValue('MerchantCode');
+	    $paymentId 		= Tools::getValue('PaymentId');
+	    $amount 		= Tools::getValue('Amount');
+	    $orderid 		= Tools::getValue('RefNo');
+	    $tranID 		= Tools::getValue('TransId');
+	    $status 		= Tools::getValue('Status');
+	    $currency 		= Tools::getValue('Currency');
+	    $errdesc 		= Tools::getValue('ErrDesc');
+	    $ipay88resqsig 	= Tools::getValue('Signature');
+	    $merchantKey 	= Configuration::get('ipay88_merchantKey');
+	    $cartAmount = str_replace(",","",$amount);
+	    $ipaySignature = '';
+	    $HashAmount = str_replace(".","",str_replace(",","",$amount));
+	    $str = sha1($merchantKey . $merchantCode . $paymentId . $orderid . $HashAmount . $currency . $status);
+	    
+	    for ($i=0;$i<Tools::strlen($str);$i=$i+2)
+	    {
+		    $ipaySignature .= chr(hexdec(Tools::substr($str,$i,2)));
+	    }
+	    
+	    $sg = base64_encode($ipaySignature);
+	    $currency = $this->context->currency;
+	    $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
+	    
+	    if(!empty(Tools::GET['gotoorder']))
+	    {
+		    echo include_once 'modules/ipay88/views/templates/custom.php';
+		    die();
+	    }
+	    
+	    if($status == "1") {
+		    if ($ipay88resqsig != $sg)
+		    {
+			    $this->module->validateOrder($orderid, Configuration::get('PS_OS_ERROR'), $cartAmount, $this->module->displayName, "ErrDesc: " . $errdesc . "\niPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
 				Tools::redirect('index.php?controller=history');
-			 }
-             else
-             {
-                $this->module->validateOrder($orderid, Configuration::get('PS_OS_PAYMENT'), $cartAmount, $this->module->displayName, "iPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
+		    }
+		    else
+		    {
+			    $this->module->validateOrder($orderid, Configuration::get('PS_OS_PAYMENT'), $cartAmount, $this->module->displayName, "iPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
 				Tools::redirect('index.php?controller=order-confirmation&id_cart='.$orderid.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
-			 }
-        }
-        else {
-                $this->module->validateOrder($orderid, Configuration::get('PS_OS_ERROR'), $cartAmount, $this->module->displayName, "ErrDesc: " . $errdesc . "\niPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
-        }
-        Tools::redirect('index.php?controller=history');
+		    }
+	    }
+	    else {
+		    $this->module->validateOrder($orderid, Configuration::get('PS_OS_ERROR'), $cartAmount, $this->module->displayName, "ErrDesc: " . $errdesc . "\niPay88 Transaction ID: " . $tranID, NULL, (int)$currency->id, false, $customer->secure_key);
+	    }
+	    Tools::redirect('index.php?controller=history');
     }
 }
 
