@@ -36,14 +36,13 @@ class IPay88ValidationModuleFrontController extends ModuleFrontController
      * @see FrontController::postProcess()
      */
     
-    public function postProcess() 
+    public function postProcess()
     {
     
         $cart = $this->context->cart;
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active)
         {
             Tools::redirect('index.php?controller=order&step=1');
-	
 	}
 	    
         $authorized = false;
@@ -52,22 +51,18 @@ class IPay88ValidationModuleFrontController extends ModuleFrontController
             {
                 $authorized = true;
                 break;
-		    
 	    }
 	}
-        if(!$authorized)
-        {
-            die($this->module->l('This payment method is not available.', 'validation'));
-	
-	}
+	    if(!$authorized)
+	    {
+		    die($this->module->l('This payment method is not available.', 'validation'));
+	    }
+	    $customer = new Customer($cart->id_customer);
+	    if (!Validate::isLoadedObject($customer))
+	    {
+		    Tools::redirect('index.php?controller=order&step=1');
+	    }
 	    
-        $customer = new Customer($cart->id_customer);
-        if (!Validate::isLoadedObject($customer))
-        {
-            Tools::redirect('index.php?controller=order&step=1');
-	
-	}
-
 	    $merchantCode	= Tools::getValue('MerchantCode');
 	    $paymentId 		= Tools::getValue('PaymentId');
 	    $amount 		= Tools::getValue('Amount');
